@@ -1,0 +1,5 @@
+service/control/__pycache__/
+service/model/__pycache__/
+static/mosquitto/data/*
+static/mosquitto/log/*
+output/
