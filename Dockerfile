@@ -20,6 +20,11 @@ RUN python3 -m pip install pip --upgrade
 
 WORKDIR /usr/local/pyChat
 COPY ./service/. .
+COPY ./static/mosquitto/config/mosquitto.conf /etc/mosquitto/
+CMD mkdir /mosquitto/data && \
+	mkdir /mosquitto/log
+#COPY ./static/mosquitto/data /mosquitto/
+#COPY ./static/mosquitto/log /mosquitto/
 COPY ./requirements.txt .
 COPY ./entrypoint.sh .
 

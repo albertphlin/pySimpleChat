@@ -17,7 +17,7 @@ def on_message(client, userdata, msg):
 
 # 連線設定
 # 初始化地端程式
-client = mqtt.Client()
+client = mqtt.Client(transport="websockets")
 
 # 設定連線的動作
 client.on_connect = on_connect
@@ -29,7 +29,10 @@ client.on_message = on_message
 #client.username_pw_set("try","xxxx")
 
 # 設定連線資訊(IP, Port, 連線時間)
-client.connect("10.0.0.19", 1883, 60)
+#client.tls_set()
+client.connect("localhost", 1884, 60)
+#client.tls_set()
+#client.connect("test.mosquitto.org", 8081, 60)
 
 # 開始連線，執行設定的動作和處理重新連線問題
 # 也可以手動使用其他loop函式來進行連接
