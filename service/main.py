@@ -16,10 +16,19 @@ client.connect("localhost", 1884, 60)
 def hello():
 	return "Hello Flask"
 
-@server.route("/publish", methods=['GET'])
+@server.route("/publish", methods=['POST'])
 def publish():
-	mqttpayload = {'Message' : 'Test Message'}
-	client.publish("msg/info", json.dumps(mqttpayload))
+	# 將payload轉型成json
+	req_data = request.get_json(force=True)
+	# 用key索引來取值
+	user = req_data['user']
+	message = req_data['message']
+	# 宣告並定義回傳payload
+	mqttpayload = { 
+		'User': user,
+		'Message': message
+	}
+	client.publish("msg/info", json.dumps(mqttpayload, ensure_ascii=False))
 	resp = { 'Status': True }
 	response = jsonify(resp)
 	response.headers.add('Access-Control-Allow-Origin', '*')
