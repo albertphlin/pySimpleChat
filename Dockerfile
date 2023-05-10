@@ -1,5 +1,5 @@
-# FROM arm64v8/ubuntu:20.04
-FROM ubuntu:20.04
+FROM arm64v8/ubuntu:20.04
+# FROM ubuntu:20.04
 
 # http://bugs.python.org/issue19846
 # > At the moment, setting "LANG=C" on a Linux system *fundamentally breaks Python 3*, and that's not OK.

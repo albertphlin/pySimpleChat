@@ -1,0 +1,15 @@
+[Unit]
+Description=pyChat application backend
+RequiresMountsFor=/run
+After=mosquitto.service
+
+[Service]
+User=root
+WorkingDirectory=/home/pi/SW/pySimpleChat/pySimpleChat/
+ExecStart=/usr/bin/python3 service/main.py
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+Environment="PYTHONPATH=$PYTHONPATH:/home/pi/.local/lib/python3.7/site-packages/"
+
+[Install]
+WantedBy=multi-user.target
