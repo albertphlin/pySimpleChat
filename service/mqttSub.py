@@ -30,7 +30,7 @@ client.on_message = on_message
 
 # 設定連線資訊(IP, Port, 連線時間)
 #client.tls_set()
-client.connect("10.0.0.19", 8083, 60)
+client.connect("localhost", 8083, 60)
 #client.tls_set()
 #client.connect("test.mosquitto.org", 8081, 60)
 

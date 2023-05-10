@@ -22,7 +22,7 @@ CHATSQL = ModelCHATSQL.SQL
 # 透過module mqtt產生instance並設定為websockets模式
 client = mqtt.Client(transport='websockets')
 # 用mqtt instance連線到mosquitto的port 8083
-client.connect("10.0.0.19", 8083)
+client.connect("localhost", 8083)
 # 讓mqtt連線持續運轉
 client.loop_start()
 
