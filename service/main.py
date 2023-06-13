@@ -1,4 +1,4 @@
-from flask import Flask, Response, jsonify, request, json
+from flask import Flask, Response, jsonify, request, json, url_for, redirect,  render_template, send_from_directory
 from flask_cors import CORS
 
 import paho.mqtt.client as mqtt
@@ -6,6 +6,10 @@ import Control.DataHandler as DataHandler
 import Model.CHATSQL as ModelCHATSQL
 import time
 import datetime
+
+import os
+import pathlib
+from werkzeug.utils import secure_filename
 
 VERSION = "0.0.3"
 server = Flask(__name__)
@@ -21,6 +25,12 @@ client = mqtt.Client(transport='websockets')
 client.connect("10.0.0.19", 8083)
 # 讓mqtt連線持續運轉
 client.loop_start()
+
+# 取得目前檔案所在的資料夾
+SRC_PATH =  pathlib.Path(__file__).parent.parent.absolute()
+UPLOAD_FOLDER = os.path.join(SRC_PATH, 'static', 'uploads')
+# 設定允許的副檔名
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'])
 
 # Decorator(修飾): 將函式引入，至物件內未定義的函式
 @server.route("/")
@@ -73,7 +83,7 @@ def querymessages():
 		# 宣告並定義撈回來的資料的json payload，將list中的MessageData物件轉型成json
 		messagespayload = json.dumps({ 'messages': [ob.to_dict() for ob in messages]}, sort_keys=True, ensure_ascii=False)
 		resp = { 'Status': True, 'rows': len(messages), 'messages': messagespayload }
-		print(f"[querymessages] resp: {resp}")
+		#print(f"[querymessages] resp: {resp}")
 	else:
 		resp = { 'Status': False }
 	# 將webapi response payload 轉成json
@@ -81,6 +91,56 @@ def querymessages():
 	# 將webapi response 加上header
 	response.headers.add('Access-Control-Allow-Origin', '*')
 	return response
+
+
+# 確認上傳檔案是否為允許的副檔名function
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
+@server.route("/filesupload", methods=['POST'])
+def filesupload():
+	file = request.files['files']
+	user = request.form['user']
+	topic = request.form['topic']
+	print(f"[filesupload] payload: {file}")
+	#Content-Disposition: form-data; name="files"; filename="logo.png"
+	#Content-Type: image/png
+	#if file.filename != '':
+	if file and allowed_file(file.filename):
+		filename = secure_filename(file.filename)
+		file.save(os.path.join(UPLOAD_FOLDER, filename))
+		datahandler.AddFile(User=user, Topic=topic, FileName=filename)
+	# 宣告webapi response payload
+	resp = { 'Status': True }
+	# 將webapi response payload 轉成json
+	response = jsonify(resp)
+	# 將webapi response 加上header
+	response.headers.add('Access-Control-Allow-Origin', '*')
+	return response
+
+
+@server.route("/filesquery", methods=['POST'])
+def filesquery():
+	req_data = request.get_json(force=True)
+	topic = req_data['topic']
+	fileList = datahandler.QueryFilesByTopic(Topic=topic)
+	filespayload = json.dumps({ 'files': [ob.to_dict() for ob in fileList]}, sort_keys=True, ensure_ascii=False)
+	# 宣告webapi response payload
+	resp = { 'Status': True, 'files': filespayload }
+	# 將webapi response payload 轉成json
+	response = jsonify(resp)
+	# 將webapi response 加上header
+	response.headers.add('Access-Control-Allow-Origin', '*')
+	return response
+
+@server.route("/filesdownload", methods=['POST'])
+def filesdownload():
+	req_data = request.get_json(force=True)
+	file = req_data['filename']
+	server.static_folder = '../static/uploads'
+	return send_from_directory(server.static_folder, filename=file, as_attachment=True)
+
 
 if __name__ == "__main__":
 	print(VERSION)

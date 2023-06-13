@@ -3,6 +3,7 @@ import datetime
 import Control.DBHandler as DB
 import Model.CHATSQL as ModelCHATSQL
 import Model.MessageData as messagedatatemplate
+import Model.FileData as filedatatemplate
 
 class DataHandler:
     def __init__(self) -> None:
@@ -15,6 +16,9 @@ class DataHandler:
                                                            Message=Message,
                                                            IP=IP,
                                                            tDateTime=tDateTime))
+
+    def AddFile(self, User, Topic, FileName, tDateTime=str(datetime.datetime.now())):
+        self.dbHandler.DoSQL(self.CHATSQL.INSERT_FILE.format(Topic=Topic, User=User, FileName=FileName, tDateTime=tDateTime))
 
     def QueryTopNMessagesByTime(self, Topic, N, Time):
         DataList = []
@@ -32,3 +36,16 @@ class DataHandler:
             DataList.insert(0, data) #倒序
             #print(f"[QueryTopNMessagesByTime] payload: {data.Topic, data.User, data.IP, data.Message, data.tDateTime}")
         return DataList
+
+    def QueryFilesByTopic(self, Topic):
+        fileList = []
+        dbresult = self.dbHandler.DoSQL(self.CHATSQL.QUERY_FILE_BY_TOPIC.format(Topic=Topic))
+
+        for result in dbresult:
+            data = filedatatemplate.FileData()
+            data.Topic = str(result['Topic'])
+            data.User = str(result['User'])
+            data.FileName = str(result['FileName'])
+            data.tDateTime = str(result['tDateTime'])
+            fileList.append(data)
+        return fileList
