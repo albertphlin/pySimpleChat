@@ -138,8 +138,9 @@ def filesquery():
 def filesdownload():
 	req_data = request.get_json(force=True)
 	file = req_data['filename']
-	server.static_folder = '../static/uploads'
-	return send_from_directory(server.static_folder, filename=file, as_attachment=True)
+	#server.static_folder = '../static/uploads'
+	return send_from_directory(directory=UPLOAD_FOLDER, filename=file, as_attachment=True)
+	#return send_from_directory(server.static_folder, filename=file, as_attachment=True)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
-service/control/__pycache__/*
-service/model/__pycache__/*
+service/Control/__pycache__/*
+service/Model/__pycache__/*
 static/mosquitto/data/*
 static/mosquitto/log/*
+static/uploads/*
 output/
