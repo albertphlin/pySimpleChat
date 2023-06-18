@@ -1,3 +1,4 @@
+
 from flask import Flask, Response, jsonify, request, json, url_for, redirect,  render_template, send_from_directory
 from flask_cors import CORS
 
@@ -30,7 +31,7 @@ client.loop_start()
 SRC_PATH =  pathlib.Path(__file__).parent.parent.absolute()
 UPLOAD_FOLDER = os.path.join(SRC_PATH, 'static', 'uploads')
 # 設定允許的副檔名
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'])
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx' , 'PNG', 'JPEG', 'JPG' ])
 
 # Decorator(修飾): 將函式引入，至物件內未定義的函式
 @server.route("/")
@@ -98,6 +99,14 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
+def filename_check(path,filename):
+	basename = os.listdir(path)
+	if filename in basename:
+		return False
+	else:
+		return True
+
+
 @server.route("/filesupload", methods=['POST'])
 def filesupload():
 	file = request.files['files']
@@ -107,10 +116,14 @@ def filesupload():
 	#Content-Disposition: form-data; name="files"; filename="logo.png"
 	#Content-Type: image/png
 	#if file.filename != '':
-	if file and allowed_file(file.filename):
+	if file and allowed_file(file.filename.lower()) and filename_check(UPLOAD_FOLDER,file.filename):
 		filename = secure_filename(file.filename)
 		file.save(os.path.join(UPLOAD_FOLDER, filename))
 		datahandler.AddFile(User=user, Topic=topic, FileName=filename)
+	else:
+		resp = { 'Status': False }
+		response = jsonify(resp)
+		return response
 	# 宣告webapi response payload
 	resp = { 'Status': True }
 	# 將webapi response payload 轉成json
@@ -139,8 +152,8 @@ def filesdownload():
 	req_data = request.get_json(force=True)
 	file = req_data['filename']
 	#server.static_folder = '../static/uploads'
-	return send_from_directory(directory=UPLOAD_FOLDER, filename=file, as_attachment=True)
-	#return send_from_directory(server.static_folder, filename=file, as_attachment=True)
+	return send_from_directory(directory=UPLOAD_FOLDER, path=file, as_attachment=True)
+	#return send_from_directory(UPLOAD_FOLDER, filename=file, as_attachment=True)
 
 
 if __name__ == "__main__":
